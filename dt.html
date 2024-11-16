@@ -1,0 +1,66 @@
+Model the following movie system as a Graph database.
+Consider a information about of movie and actors. One movie can have
+more than one actor
+1. Identify the labels and relationships, along with their properties, and
+draw a high-level Graph model. [3]
+2. Create nodes and relationships, along with their properties, and
+visualize your actual Graph model. [3]
+3. Answer the Queries:
+a. Find movie which made highest business. [3]
+b. Display details of movie along with actors. [3]
+c. List all the movie of “Shahrukh Khan”. [4]
+d. Display all movie having more than 2 awards received
+ [4]
+
+
+
+# Start mongosh (MongoDB   )
+mongosh
+
+# Create and use the database
+use movieDB
+
+# Insert the movie and actor data
+db.Movies.insertMany([
+  { _id: 1, title: "Movie A", business: 1000000, awards: 3 },
+  { _id: 2, title: "Movie B", business: 1500000, awards: 2 },
+  { _id: 3, title: "Movie C", business: 500000, awards: 4 }
+])
+
+db.Actors.insertMany([
+  { _id: 1, name: "Shahrukh Khan" },
+  { _id: 2, name: "Aamir Khan" },
+  { _id: 3, name: "Katrina Kaif" }
+])
+
+# Create relationships between movies and actors
+db.Movies.updateOne(
+  { _id: 1 },
+  { $set: { actors: [1, 2] } }
+)
+db.Movies.updateOne(
+  { _id: 2 },
+  { $set: { actors: [1, 3] } }
+)
+db.Movies.updateOne(
+  { _id: 3 },
+  { $set: { actors: [2, 3] } }
+)
+
+# Run the queries as needed
+db.Movies.find().sort({ business: -1 }).limit(1)
+
+db.Movies.aggregate([
+  {
+    $lookup: {
+      from: "Actors",
+      localField: "actors",
+      foreignField: "_id",
+      as: "actor_details"
+    }
+  }
+])
+
+db.Movies.find({ actors: 1 })
+
+db.Movies.find({ awards: { $gt: 2 } })
